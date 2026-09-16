@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project 1: Images of the Russian Empire</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Special+Elite&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-color: #141210;
+      --plate-outer: #050505;
+      --plate-inner: #151312;
+      --text-main: #eee8dc;
+      --text-muted: #9c9485;
+      --hairline: rgba(240, 235, 220, 0.72);
+      --box-inner: #0d0c0b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      padding: 3rem 1rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+
+    header h1 {
+      font-size: 2.6rem;
+      margin-bottom: 0.5rem;
+      color: #ffffff;
+      text-shadow: 
+        -3px -1px 0px rgba(255, 30, 30, 0.85),
+         3px  1px 0px rgba(0, 230, 255, 0.85),
+         0px  2px 0px rgba(40, 255, 40, 0.65);
+      letter-spacing: 2px;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      font-style: italic;
+    }
+
+    section {
+      background: var(--plate-inner);
+      position: relative;
+      border-top: 18px solid var(--plate-outer);
+      border-bottom: 18px solid var(--plate-outer);
+      border-right: 18px solid var(--plate-outer);
+      border-left: 48px solid var(--plate-outer);
+      border-radius: 2px;
+      padding: 2.5rem 2rem 2.5rem 2rem;
+      margin-bottom: 4.5rem;
+      box-shadow: 
+        0 0 0 1px #24201c,
+        0 14px 35px rgba(0, 0, 0, 0.95);
+    }
+
+    section::after {
+      content: "";
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      right: 6px;
+      bottom: 6px;
+      border: 1.5px solid var(--hairline);
+      pointer-events: none;
+      opacity: 0.82;
+    }
+
+    .plate-etch {
+      position: absolute;
+      left: -42px;
+      color: rgba(245, 240, 230, 0.82);
+      font-family: 'Special Elite', 'Caveat', monospace;
+      font-size: 0.85rem;
+      letter-spacing: 2px;
+      user-select: none;
+      pointer-events: none;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      text-shadow: 0 0 1px rgba(255, 255, 255, 0.4);
+    }
+
+    .plate-etch.top {
+      top: 24px;
+    }
+
+    .plate-etch.mid {
+      top: 45%;
+      font-family: 'Caveat', cursive;
+      font-size: 1.15rem;
+      color: rgba(230, 225, 215, 0.7);
+    }
+
+    .plate-etch.bottom {
+      bottom: 24px;
+      top: auto;
+      font-family: 'Caveat', cursive;
+      font-size: 1.1rem;
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      margin-bottom: 1.25rem;
+      color: #ffffff;
+      border-bottom: 1px solid #29241f;
+      padding-bottom: 0.6rem;
+      text-shadow: 
+        -2px -1px 0px rgba(255, 50, 50, 0.85),
+         2px  1px 0px rgba(0, 200, 255, 0.85);
+      letter-spacing: 0.5px;
+    }
+
+    .explanation {
+      background: var(--box-inner);
+      border: 1px solid #2b251f;
+      padding: 1.25rem;
+      margin-bottom: 1.75rem;
+      border-radius: 2px;
+    }
+
+    .explanation p {
+      color: var(--text-main);
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .card {
+      background: #080706;
+      border: 1px solid #26201b;
+      border-radius: 2px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
+    }
+
+    .card img {
+      width: 100%;
+      height: 250px;
+      object-fit: cover;
+      display: block;
+      background-color: #050403;
+    }
+
+    .card .caption {
+      padding: 0.75rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-align: center;
+      word-break: break-all;
+      background-color: #0e0c0b;
+      border-top: 1px solid #1a1613;
+    }
+
+    .custom-gallery {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    @media (max-width: 900px) {
+      .custom-gallery {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .custom-card {
+      background: #080706;
+      border: 1px solid #26201b;
+      border-radius: 2px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.8);
+    }
+
+    .sub-label {
+      padding: 0.35rem 0.5rem;
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      background-color: #12100e;
+      border-bottom: 1px solid #1a1613;
+      border-top: 1px solid #1a1613;
+      text-align: center;
+    }
+
+    .custom-card img.raw-tif {
+      width: 100%;
+      height: 380px;
+      object-fit: contain;
+      display: block;
+      background-color: #020202;
+    }
+
+    .custom-card img.colorized {
+      width: 100%;
+      height: 240px;
+      object-fit: cover;
+      display: block;
+      background-color: #050403;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>Project 1: Images of the Russian Empire</h1>
+      <p>Colorizing the Prokudin-Gorskii photo collection</p>
+    </header>
+
+    <section id="single-scale">
+      <span class="plate-etch top">1930</span>
+      <span class="plate-etch mid">№ 451</span>
+      <span class="plate-etch bottom">exp. 1/26s</span>
+
+      <h2>1. Single-Scale Alignment</h2>
+      <div class="explanation">
+        <p>The easiest way to align pixels is to do an exhaustive search. By using a scoring engine, we are able to calculate the best displacement for green and red colors to the fixed blue channel. By iterating over every displacement from a [-15,15] window and scoring each one, we are able to find the x and y displacement for the best shift. To counteract the end of the photos, np.roll() is able to wrap the data around to the other side as needed. Additionally, after the first iteration, the colors were still a bit off, inspiring a crop function to make sure the edge of the old photos were not inadvertently offsetting the accurate values. Regardless of if we use the L2 or NCC scoring matrix, we get the same shift values so I personally chose to use the NCC scoring matrix. L2 measures pixel value distances and NCC measures brightness differences, resulting in similar displacement values since a good structural match is also where the brightness matches. The only problem now is that this manual process of shifting the evaluation box is too time consuming for a larger image...</p>
+      </div>
+      <div class="gallery">
+        <div class="card">
+          <img src="media/cathedral_out.jpg">
+          <div class="caption">GB displacement: 2, 5<br>RB displacement: 3, 12</div>
+        </div>
+        <div class="card">
+          <img src="media/tobolsk_out.jpg">
+          <div class="caption">GB displacement: 3, 3<br>RB displacement: 3, 6</div>
+        </div>
+        <div class="card">
+          <img src="media/monastery_out.jpg">
+          <div class="caption">GB displacement: 2, -3<br>RB displacement: 2, 3</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="multiscale">
+      <span class="plate-etch top">1187</span>
+      <span class="plate-etch mid">№ 002</span>
+      <span class="plate-etch bottom">LC-DIG-02</span>
+
+      <h2>2. Multi-Scale Pyramid Alignment</h2>
+      <div class="explanation">
+        <p>To solve larger images, a new multi-scale image pyramid algorithm is needed. A downsampling is implemented to handle the large files by filtering then subsampling via a gaussian blur. After the downsampling is implemented, we use it in our pyramid align then recursively call it to find the best shift. Once it is downsampled enough, the single align algorithm from part 1 is run. As the recursion is unpacked, each level doubles the shift and a small pixel search refinement (+/-2) is run around the scaled up resolution, building up the pyramid. This refinement is needed since the earlier downsampling loses sub-pixel precision. This process is ran to align green to blue and red to blue as well to properly colorize the images. However, as you can see, the Emir photo colors are not properly aligned...</p>
+      </div>
+      <div class="gallery">
+        <div class="card">
+          <img src="media/ilemselga_out.jpg">
+          <div class="caption">GB displacement: 16, 32<br>RB displacement: 16, 128</div>
+        </div>
+        <div class="card">
+          <img src="media/harvesters_out.jpg">
+          <div class="caption">GB displacement: 16, 64<br>RB displacement: 16, 128</div>
+        </div>
+        <div class="card">
+          <img src="media/self_portrait_new_out.jpg">
+          <div class="caption">GB displacement: 32, 80<br>RB displacement: 32, 176</div>
+        </div>
+        <div class="card">
+          <img src="media/siren_out.jpg">
+          <div class="caption">GB displacement: 0, 48<br>RB displacement: -32, 96</div>
+        </div>
+        <div class="card">
+          <img src="media/icon_out.jpg">
+          <div class="caption">GB displacement: 16, 48<br>RB displacement: 16, 96</div>
+        </div>
+        <div class="card">
+          <img src="media/melons_out.jpg">
+          <div class="caption">GB displacement: 16, 80<br>RB displacement: 16, 176</div>
+        </div>
+        <div class="card">
+          <img src="media/three_generations_out.jpg">
+          <div class="caption">GB displacement: 16, 48<br>RB displacement: 16, 112</div>
+        </div>
+        <div class="card">
+          <img src="media/church_out.jpg">
+          <div class="caption">GB displacement: 0, 24<br>RB displacement: -8, 56</div>
+        </div>
+        <div class="card">
+          <img src="media/religous_painting_out.jpg">
+          <div class="caption">GB displacement: 0, 24<br>RB displacement: 8, 64</div>
+        </div>
+        <div class="card">
+          <img src="media/emir_out.jpg">
+          <div class="caption">GB displacement: 32, 48<br>RB displacement: -208, 144</div>
+        </div>
+        <div class="card">
+          <img src="media/wharf_out.jpg">
+          <div class="caption">GB displacement: 0, 16<br>RB displacement: -16, 80</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="failures-improvements">
+      <span class="plate-etch top">3894</span>
+      <span class="plate-etch mid">№ 403-B</span>
+      <span class="plate-etch bottom">filter +2</span>
+
+      <h2>3. Failure and Improvements</h2>
+      <div class="explanation">
+        <p>The Emir photo doesn't work with our alignment strategy derived from pure pixels. This is because the different colors do not have the same brightness level, so instead of using raw brightness, we line up the edges of the color planes. Using cv.Sobel, we are able to get the gradient magnitudes to identify structural edges to align. Adding this edge-based preprocessing step with our scoring engine to the pyramid align allows for a better colorization for Emir and minor GB and RB shifts in the other photos as well.</p>
+      </div>
+      <div class="gallery">
+        <div class="card">
+          <img src="media/ilemselga_new_out.jpg">
+          <div class="caption">GB displacement: 7, 40<br>RB displacement: 11, 131</div>
+        </div>
+        <div class="card">
+          <img src="media/harvesters_new_out.jpg">
+          <div class="caption">GB displacement: 17, 60<br>RB displacement: 13, 123</div>
+        </div>
+        <div class="card">
+          <img src="media/self_portrait_new_out.jpg">
+          <div class="caption">GB displacement: 29, 78<br>RB displacement: 37, 176</div>
+        </div>
+        <div class="card">
+          <img src="media/siren_new_out.jpg">
+          <div class="caption">GB displacement: -6, 49<br>RB displacement: -25, 96</div>
+        </div>
+        <div class="card">
+          <img src="media/icon_new_out.jpg">
+          <div class="caption">GB displacement: 17, 42<br>RB displacement: 23, 90</div>
+        </div>
+        <div class="card">
+          <img src="media/melons_new_out.jpg">
+          <div class="caption">GB displacement: 10, 80<br>RB displacement: 13, 177</div>
+        </div>
+        <div class="card">
+          <img src="media/three_genertions_new_out.jpg">
+          <div class="caption">GB displacement: 12, 54<br>RB displacement: 9, 111</div>
+        </div>
+        <div class="card">
+          <img src="media/church_new_out.jpg">
+          <div class="caption">GB displacement: 4, 25<br>RB displacement: -4, 58</div>
+        </div>
+        <div class="card">
+          <img src="media/religous_painting_new_out.jpg">
+          <div class="caption">GB displacement: 1, 30<br>RB displacement: 6, 70</div>
+        </div>
+        <div class="card">
+          <img src="media/emir_new_out.jpg">
+          <div class="caption">GB displacement: 23, 49<br>RB displacement: 40, 107</div>
+        </div>
+        <div class="card">
+          <img src="media/wharf_new_out.jpg">
+          <div class="caption">GB displacement: -7, 15<br>RB displacement: -17, 83</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="custom-images">
+      <span class="plate-etch top">5120</span>
+      <span class="plate-etch mid">№ 089</span>
+      <span class="plate-etch bottom">A-37</span>
+
+      <h2>4. Custom Images</h2>
+      <div class="explanation">
+        <p>The improved multi-scale image pyramid colorization technique was used on three more images from the Prokudin-Gorskii collection. Below, the original .tif file and the new colorized versions are shown. I chose the statue (first image) to test complex subjects and chose the photo of Milan (third image) to see if the algorithm would work for reptitive patterns like the roof of the building.</p>
+      </div>
+      <div class="custom-gallery">
+        
+        <div class="custom-card">
+          <div class="sub-label">Ėtrusskīi︠a︡ vazy. V Ėrmitazhi︠e︡ v SPeterburgi︠e︡</div>
+          <img class="raw-tif" src="media/statue.png">
+          
+          <div class="sub-label"></div>
+          <img class="colorized" src="media/state_new_out.jpg">
+          
+          <div class="caption">GB displacement: 27, 21<br>RB displacement: 53, 110</div>
+        </div>
+
+        <div class="custom-card">
+          <div class="sub-label">Locomotive and coal car at a railroad yard</div>
+          <img class="raw-tif" src="media/locomotive.png">
+          
+          <div class="sub-label"></div>
+          <img class="colorized" src="media/locomotive_new_out.jpg">
+          
+          <div class="caption">GB displacement: 31, 38<br>RB displacement: -164, 270</div>
+        </div>
+
+        <div class="custom-card">
+          <div class="sub-label">Detali sobora v Milani︠e︡</div>
+          <img class="raw-tif" src="media/milan.png">
+          
+          <div class="sub-label"></div>
+          <img class="colorized" src="media/milan_new_out.jpg">
+          
+          <div class="caption">GB displacement: 12, 58<br>RB displacement: 24, 125</div>
+        </div>
+
+      </div>
+    </section>
+
+  </div>
+
+</body>
+</html>
