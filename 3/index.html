@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fun with Filters and Frequencies!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        margin: 0;
+        min-height: 100vh;
+        background: linear-gradient(90deg, #ffe4e6, #ffedd5, #fed7aa, #fecdd3, #ffe4e6);
+        background-size: 300% 100%;
+        animation: shiftBackground 16s ease-in-out infinite alternate;
+        color: #374151;
+      }
+      @keyframes shiftBackground {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+    </style>
+  </head>
+  <body class="py-12 px-4 sm:px-6 lg:px-8 flex justify-center">
+    <main class="w-full max-w-5xl space-y-8">
+      <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 text-center">
+        <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">
+          Fun with Filters and Frequencies!
+        </h1>
+      </div>
+
+      <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 space-y-6">
+        <h2 class="text-2xl font-bold text-gray-900">
+          Part 1.1: Convolutions from Scratch!
+        </h2>
+        <div class="bg-white rounded-xl p-4 border border-gray-200">
+          <p class="text-sm sm:text-base text-gray-700 leading-relaxed">
+            The convolution pads the image and slides a flipped kernel across the image. By padding the image with half the kernel size, we make sure the kernel can slide over the edge of the image, ensuring our final output has the same dimensions as the original. The 4 for-loop convolution analyzes every pixel, taking the longest. The 2 for-loop implementation uses the summation in the numpy library.
+          </p>
+        </div>
+        <div class="bg-white rounded-xl p-4 border border-gray-200 overflow-x-auto">
+          <pre class="text-xs sm:text-sm font-mono text-gray-800 whitespace-pre-wrap leading-relaxed">def conv_4(image, kernel):
+    h, w = image.shape
+    kh, kw = kernel.shape
+    ph, pw = kh // 2, kw // 2
+    pad = np.pad(image, ((ph, ph), (pw, pw)), mode="constant")
+    kernel = np.flip(kernel, axis=(0, 1))
+    result = np.zeros_like(image, dtype=float)
+    for i in range(h):
+        for j in range(w):
+            for u in range(kh):
+                for v in range(kw):
+                    result[i, j] += kernel[u, v] * pad[i+u, j+v]
+    return result
+
+
+def conv_2(image, kernel):
+    h, w = image.shape
+    kh, kw = kernel.shape
+    ph, pw = kh // 2, kw // 2
+    pad = np.pad(image, ((ph, ph), (pw, pw)), mode="constant")
+    kernel = np.flip(kernel, axis=(0, 1))
+    result = np.zeros_like(image, dtype=float)
+    for i in range(h):
+        for j in range(w):
+            result[i, j] = np.sum(kernel * pad[i: i+kh, j: j+kw])
+    return result</pre>
+        </div>
+        <div class="bg-white rounded-xl p-4 border border-gray-200 text-sm text-gray-700 leading-relaxed">
+          By using np.allclose() between the two naive implementations above with the scipy.signal.convolve2d function, we can see that our implementation returns the same values as the built in python version. When using the time library in python, we are able to time how fast each one runs. The 4 for-loop convolution takes 0.000345 seconds while the 2 for-loop convolution takes less time at 0.000241 second. This makes sense the function is not going through the image as slowly as if we went through each pixel like it does for conv_4. The built in convolution function is the fastest at 0.000035 seconds. Looking at the selfie, we can see how the Dx filter is able to extract the vertical lines better and the DY filter is able to extract the horizontal lines clearer.
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 items-start">
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/selfie.png" alt="selfie" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-sm text-gray-700 font-mono text-center">selfie</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/blur.jpg" alt="blur" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-sm text-gray-700 font-mono text-center">blur</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/grad_x.jpg" alt="grad_x" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-sm text-gray-700 font-mono text-center">grad_x</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/grad_y.jpg" alt="grad_y" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-sm text-gray-700 font-mono text-center">grad_y</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 space-y-6">
+        <h2 class="text-2xl font-bold text-gray-900">
+          Part 1.2: Finite Difference Operator
+        </h2>
+        <div class="bg-white rounded-xl p-4 border border-gray-200">
+          <p class="text-sm sm:text-base text-gray-700 leading-relaxed">
+            I created a finite difference operators and by calculating the square difference between the two, I am able to get the gradient magnitude, which measures the edge strength. As you can see, the Dx is able to extract better vertical lines and Dy can better extract the horizontal lines. By combining them in the gradient magnitude, you get a more complete picture. The threshold value is able to hide noise in the image while still being able to capture the important details in the image.
+          </p>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 items-start">
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/cam_dx.jpg" alt="Dx" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Dx</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/cam_dy.jpg" alt="Dy" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Dy</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/cam_gm.jpg" alt="Gradient Magnitude" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Gradient Magnitude</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/cam_eb.jpg" alt="Edge Binary" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Edge Binary</span>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl p-4 border border-gray-200 text-sm text-gray-700 leading-relaxed">
+          Choosing the threshold is important to make sure the image is not too noisy but also shows the important details. I chose 0.25 because it was least noisy in the grassy areas while still being able to see the important subject, which is the cameraman and his tripod.
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 items-start">
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/15.png" alt="threshold = 0.15" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">threshold = 0.15</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/20.png" alt="threshold = 0.20" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">threshold = 0.20</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/25.png" alt="threshold = 0.25" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">threshold = 0.25</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/30.png" alt="threshold = 0.30" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">threshold = 0.30</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 space-y-6">
+        <h2 class="text-2xl font-bold text-gray-900">
+          Part 1.3: Derivative of Gaussian (DoG) Filter
+        </h2>
+        <div class="bg-white rounded-xl p-4 border border-gray-200">
+          <p class="text-sm sm:text-base text-gray-700 leading-relaxed">
+            The difference operatore creates noisy results, and the solution is to blue the entire image with a gaussian filter first. Then if we compute the gradient magnitude like we did before and the edge binary. As you can see, the Dx and Dy filters pick up less and therefore creates a cleaner final outline.
+          </p>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 items-start">
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/cam_blur_dx.jpg" alt="Dx" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Dx</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/cam_blur_dy.jpg" alt="Dy" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Dy</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/cam_blur_gm.jpg" alt="Gradient Magnitude" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Gradient Magnitude</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/cam_blur_eb.jpg" alt="Edge Binary" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Edge Binary</span>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl p-4 border border-gray-200 text-sm text-gray-700 leading-relaxed">
+          Instead of blurring then finding the derivative, we are able to do one convolution instead of two by creating a derivative of the filters. Doing this should still get us back to the original image as if we blurred the original image with a gaussian blur first.
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 items-start">
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/dog_dx.png" alt="Dx (DoG)" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Dx (DoG)</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/dog_dy.png" alt="Dy (DoG)" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Dy (DoG)</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/dog_eb.jpg" alt="Edge Binary (DoG)" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Edge Binary (DoG)</span>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl p-4 border border-gray-200 text-sm text-gray-700 leading-relaxed">
+          Here, you can see how to the finite difference edge binary compares to one that has already been smoothed out. There is way less noise and the lines are cleaner. I also adjusted the threshold from 0.25 to 0.09 when using the gaussian blur since there is less noie to filter out, we can include more edges from the convolutions.
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start">
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/blurred_cameraman.png" alt="Blurred Image" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Blurred Image</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/cam_eb.jpg" alt="Finite Difference" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Finite Difference</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/dog_eb.jpg" alt="DoG" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">DoG</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 space-y-6">
+        <h2 class="text-2xl font-bold text-gray-900">
+          Part 2.1: Image "Sharpening"
+        </h2>
+        <div class="bg-white rounded-xl p-4 border border-gray-200">
+          <p class="text-sm sm:text-base text-gray-700 leading-relaxed">
+            When running a Gaussian, it removes the high frequencies because it is a low pass filter and effectively smooths out rapid changes. We can extract the high frequencies by subtracting the blurred image from the original allows us to isolate the sharp edges and textures again. So in order to sharpen the image again, we can do the inverse and add more of our extracted high frequencies back to the image by multiplying our high frequency mask by a factor of &alpha;.
+          </p>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start">
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/taj_low.jpg" alt="Low Pass Filter" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Low Pass Filter</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/taj_high.jpg" alt="High Pass Filter" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">High Pass Filter</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/1.5.jpg" alt="Sharpened (&alpha; = 1.5)" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Sharpened (&alpha; = 1.5)</span>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl p-4 border border-gray-200">
+          <p class="text-sm sm:text-base text-gray-700 leading-relaxed">
+            Varying the scaling factor &alpha; alters how defined the edges and details are. As &alpha; values increase, there are sharper edges, greater local contrast, and amplified high-frequency noise. At 2.5, we see the graininess of the image increase and an odd glow around the top of the Taj Mahal. This is why 1.5 was a good scaling factor; it was able to amplify the sharp edges while not having it overpower the image.
+          </p>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 items-start">
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/0.5.jpg" alt="&alpha; = 0.5" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">&alpha; = 0.5</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/1.jpg" alt="&alpha; = 1.0" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">&alpha; = 1.0</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/1.5.jpg" alt="&alpha; = 1.5" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">&alpha; = 1.5</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/2.5.jpg" alt="&alpha; = 2.5" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">&alpha; = 2.5</span>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl p-4 border border-gray-200">
+          <p class="text-sm sm:text-base text-gray-700 leading-relaxed">
+            If you were to blur the image first before running the resharpening filter over it, you will get a reduced high pass filter. As a result, regardless of how much you multiply the high pass filter by, your resharpened image will not be as clear as the original.
+          </p>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 items-start">
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/otter.png" alt="Original" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Original</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/blurred_otter.png" alt="Blurred" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Blurred</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/otter_high.png" alt="Resharpened" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">High Pass</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/sharpened_otter.png" alt="High Pass" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Resharpened</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 space-y-6">
+        <h2 class="text-2xl font-bold text-gray-900">
+          Part 2.2: Hybrid Images
+        </h2>
+        <div class="bg-white rounded-xl p-4 border border-gray-200">
+          <p class="text-sm sm:text-base text-gray-700 leading-relaxed">
+            For these hybrid images, by making one image a low pass filter and another one a high pass filter, depending on the distance from where you look at the image, you can see one more clearly than the other. The farther you move from the image, the more the high-frequency image fades and the low-frquency aspects become clearly. You can see it in the image of Derek and his cat, Nutmeg. From up close, you can see Nutmeg who is put through the high frequency filter. But if you move away, you see Derek more clearly since he is put through a low frequency filter.
+          </p>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start">
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/DerekPicture.jpg" alt="Derek" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Derek</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/nutmeg.jpg" alt="Nutmeg" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Nutmeg</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/catman.png" alt="Hybrid Output" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Hybrid Output</span>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl p-4 border border-gray-200">
+          <p class="text-sm sm:text-base text-gray-700 leading-relaxed">
+            Here is another example to show how it works. We have a picture of a lion and a kitten, two sides of the same coin. First, we align the two images using the align function provided by the course and select the eyes to align the images on. As you can see, the images are cropped and rotated to match. The Fourier transforms of all the images are also provided. From there, we create a low-pass filter for the lion and a high-pass filter for the kitten. When added together, it becomes a hybrid image of the two cats! The cutoff frequency choice was found through testing. A  higher sigma2 value allows for more blurring of the image (low pass filter) and a higher sigma1 value allows for more structural details to pass through. For this, I chose 7 for sigma1 and 9 for sigma2.
+          </p>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 items-start">
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/lion.jpg" alt="Original Lion Picture" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Original Lion Picture</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/cat.jpg" alt="Original Kitten Picture" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Original Kitten Picture</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/aligned_lion.png" alt="Aligned Lion Picture" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Aligned Lion Picture</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/aligned_cat.png" alt="Aligned Kitten Picture" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Aligned Kitten Picture</span>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 items-start">
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/im1_aligned.png" alt="Aligned Lion" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Aligned Lion</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/im2_aligned.png" alt="Aligned Kitten" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Aligned Kitten</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/im_high.png" alt="High-Pass" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">High-Pass</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/im_low.png" alt="Low-Pass" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Low-Pass</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/hybrid.png" alt="Hybrid Fourier" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Hybrid Fourier</span>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start">
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/lion_mid.png" alt="Lion" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Lion Low Pass Filter</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/cat_mid.png" alt="Kitten" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Kitten High Pass Filter</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/catlion.png" alt="Hybrid Result" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Hybrid Result</span>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl p-4 border border-gray-200">
+          <p class="text-sm sm:text-base text-gray-700 leading-relaxed">
+            Here is another example. This time, we try to blend two very different facial emotions. The result is a bit unsettling due to the contradictory nature of the images!
+          </p>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start">
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/happy.jpg" alt="Happy Face" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Happy Face</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/sad.jpg" alt="Sad Face" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Sad Face</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/sadhappy.png" alt="Mix of Emotion" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Mix of Emotion</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 space-y-6">
+        <h2 class="text-2xl font-bold text-gray-900">
+          Part 2.3: Gaussian and Laplacian Stacks
+        </h2>
+        <div class="bg-white rounded-xl p-4 border border-gray-200">
+          <p class="text-sm sm:text-base text-gray-700 leading-relaxed">
+            Gaussian and Laplacian stacks allow us to break down images into different frequencies without subsampling. A Gaussian stack continuously blurs the image to isolate low-frequencies, while the Laplacian stack subtracts consecutive levels of the Gaussian stack. Here is how these stacks look with the picture of the apple and orange from the paper. By setting up these frequency bands, we are later able to implement the blending of two images.
+          </p>
+        </div>
+        <div class="space-y-6">
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/G_apple.png" alt="Gaussian Apple Stack" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Gaussian Apple Stack</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/L_apple.png" alt="Laplacian Apple Stack" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Laplacian Apple Stack</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/G_orange.png" alt="Gaussian Orange Stack" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Gaussian Orange Stack</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/L_orange.png" alt="Laplacian Orange Stack" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Laplacian Orange Stack</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 space-y-6">
+        <h2 class="text-2xl font-bold text-gray-900">
+          Part 2.4: Multiresolution Blending (a.k.a. the oraple!)
+        </h2>
+        <div class="bg-white rounded-xl p-4 border border-gray-200">
+          <p class="text-sm sm:text-base text-gray-700 leading-relaxed">
+            Taking the Laplacian stack of the images and the Gaussian stack of the mask, we are able to cleanly blend the two images. The Laplacian stack sllows for the apple and orange to be separated into layers of low to high frequencies. The Gaussian stack of the mask smooths out the mask so the transition between the two pictures are not as abrupt as the white and black in the mask itself.
+          </p>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 items-start">
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/apple.jpeg" alt="Apple" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Apple</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/orange.jpeg" alt="Orange" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Orange</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/line mask.png" alt="Mask" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Mask</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/oaple.png" alt="Oraple" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Oraple</span>
+          </div>
+        </div>
+        <div class="flex flex-col items-center">
+          <div class="w-full bg-gray-50 border border-gray-200 rounded-2xl overflow-hidden flex items-center justify-center p-2">
+            <img src="media/textbook.png" alt="Final High-Resolution Blend" class="w-full h-auto rounded-xl block">
+          </div>
+          <span class="mt-2 text-sm font-mono text-center text-gray-700">Final High-Resolution Blend</span>
+        </div>
+        <div class="bg-white rounded-xl p-4 border border-gray-200">
+          <p class="text-sm sm:text-base text-gray-700 leading-relaxed">
+            We also evaluate this blending technique on other images and other masks. You can see below how a pig and a cow may not even be that different after all. And a butterfly can display some insane beauty in its wings. Just for fun, I also tried the butterfly mask on the apple and orange problem and now the whole photo looks more like an orange!
+          </p>
+	</div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 items-start">
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/pig.jpg" alt="Apple" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Pig</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/cow.jpg" alt="Orange" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Cow</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/line mask.png" alt="Mask" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Mask</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/cowpig.png" alt="Blended Result" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Blended Result</span>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 items-start">
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/apple.jpeg" alt="Apple" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Apple</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/Orange.jpeg" alt="Orange" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Orange</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/butterfly mask.jpg" alt="Mask" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Mask</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/oraple.png" alt="Blended Result" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Blended Result</span>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 items-start">
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/butterfly.jpg" alt="Butterfly" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Butterfly</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/night.jpeg" alt="Night Sky" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Night Sky</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/new butterfly mask.jpg" alt="Irregular Mask" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Irregular Mask</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-1">
+              <img src="media/night_butterfly.png" alt="Irregular Blend" class="w-full h-auto rounded-lg block">
+            </div>
+            <span class="mt-2 text-xs font-mono text-center text-gray-700">Irregular Blend</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 space-y-6">
+        <h2 class="text-2xl font-bold text-gray-900">
+          What I Learned
+        </h2>
+        <div class="bg-white rounded-xl p-4 border border-gray-200 text-sm sm:text-base text-gray-700 leading-relaxed space-y-4">
+          <p>
+            I thought it was extremely interesting to learn about how our eyes perceive frequencies. Part 1 of the assignment was letting us extract high frequencies, the edges of the images. Being able to see how the Dx and Dy filters grab the vertical and horizontal lines respectively was very cool. From there, being able to test how our eyes interpret low and high frequencies in the hybrid images was very interesting. And it makes a lot of sense; when we are up close, we can pay attention to all the fine details that comes from a high pass filter but when we can't make out these small lines anymore, our brain uses the giant colors and fills in the details, which is why we can see the low pass filter. Lastly, using stacks to blur and layer frequencies to create smooth transitions was just cool to see. In the middle portion, if we adjust frequencies, we are able to adjust what we see and perceive, smoothing out transitions between different images.
+          </p>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
