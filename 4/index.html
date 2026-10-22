@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project 3: Fun with Flow Models</title>
+  <style>
+    :root {
+      --bg-color: #fdfaf6;
+      --text-main: #3d2314;
+      --subtext: #7a543e;
+      --box-bg: #8b5a2b;
+      --box-border: #5c3a1b;
+      --ear-bg: #8b5a2b;
+      --ear-inner: #d2a679;
+      --text-light: #fff8f0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      padding: 50px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      max-width: 850px;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 6px;
+      color: var(--text-main);
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .subheading {
+      font-size: 1.3rem;
+      margin-bottom: 40px;
+      color: var(--subtext);
+      font-weight: 600;
+    }
+
+    h2.part-header {
+      font-size: 2rem;
+      margin-top: 60px;
+      margin-bottom: 25px;
+      color: var(--text-main);
+      border-bottom: 3px solid var(--subtext);
+      padding-bottom: 8px;
+    }
+
+    h2.section-header {
+      font-size: 1.6rem;
+      margin-top: 40px;
+      margin-bottom: 25px;
+      color: var(--text-main);
+      border-bottom: 2px solid var(--subtext);
+      padding-bottom: 6px;
+    }
+
+    .bear-box {
+      position: relative;
+      background-color: var(--box-bg);
+      border: 4px solid var(--box-border);
+      border-radius: 28px;
+      padding: 28px;
+      margin-bottom: 35px;
+      box-shadow: 0 10px 20px rgba(61, 35, 20, 0.12);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .bear-box::before,
+    .bear-box::after {
+      content: '';
+      position: absolute;
+      top: -26px;
+      width: 56px;
+      height: 56px;
+      background-color: var(--ear-bg);
+      border: 4px solid var(--box-border);
+      border-radius: 50%;
+      z-index: -1;
+      background-image: radial-gradient(circle, var(--ear-inner) 42%, var(--ear-bg) 43%);
+    }
+
+    .bear-box::before {
+      left: 18px;
+    }
+
+    .bear-box::after {
+      right: 18px;
+    }
+
+    .bear-box h3 {
+      font-size: 1.3rem;
+      color: var(--text-light);
+      font-weight: 700;
+    }
+
+    .description-text {
+      color: #f3e9dc;
+      line-height: 1.6;
+      font-size: 0.98rem;
+    }
+
+    .image-box {
+      width: 100%;
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .image-box img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 12px;
+      border: 2px solid var(--box-border);
+      display: block;
+    }
+
+    .image-row-3 {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .image-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .image-item img {
+      width: 100%;
+      height: auto;
+      border-radius: 12px;
+      border: 2px solid var(--box-border);
+      display: block;
+    }
+
+    .image-label {
+      color: #f3e9dc;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .split-row {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+      align-items: center;
+    }
+
+    .split-row .large-col {
+      flex: 3;
+    }
+
+    .split-row .small-col {
+      flex: 1;
+      display: flex;
+      justify-content: flex-start;
+    }
+
+    .split-row .large-col img {
+      width: 100%;
+      height: auto;
+      border-radius: 12px;
+      border: 2px solid var(--box-border);
+      display: block;
+    }
+
+    .split-row .small-col img {
+      width: auto;
+      max-width: 100%;
+      height: auto;
+      border-radius: 12px;
+      border: 2px solid var(--box-border);
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Project 3: Fun with Flow Models</h1>
+    <div class="subheading">CS180: Intro to Computer Vision & Computational Photography</div>
+
+    <h2 class="part-header">Part A: Exploring the Power of Flow Models</h2>
+
+    <h2 class="section-header">1. Visualizing Training and Sampling</h2>
+
+    <div class="bear-box">
+      <h3>1.1 Constructing Noisy Training Inputs</h3>
+      <p class="description-text">
+        By interpolating a clean image with Gaussian noise, we are able to construct noisy training inputs. With the equation, x_t = (1-t)e + t*x_1 with e sampled from a Normal distribution, we are able to modify the clean image x_1. From t=0 to t=1, we go from a noisy image to the clean on respectively.
+      </p>
+      <div class="image-box">
+        <img src="media/1.1.png" alt="">
+      </div>
+    </div>
+
+    <div class="bear-box">
+      <h3>1.2 Classical Denoising</h3>
+      <p class="description-text">
+        By using a Gaussian blur, we are able to reduce noise since the averaging of nearby pixels cancels independent, zero-mean noise. As you can see, at high levels of noise, there are the results aren't as good because the Gaussian blur also removes high frequency (e.g. edges, outlines) when it is removing noise.
+      </p>
+      <div class="image-box">
+        <img src="media/1.21.png" alt="">
+      </div>
+
+      <div class="image-box">
+        <img src="media/1.2.png" alt="">
+      </div>
+
+      <div class="image-box">
+        <img src="media/1.23.png" alt="">
+      </div>
+    </div>
+
+    <div class="bear-box">
+      <h3>1.3 One-Step Denoising</h3>
+      <p class="description-text">
+        Using a pretrained flow model, we are able to predict the vector field that would point from the noise to our clean image. As we take one sleep in the direction of the vector field, we slowly get a cleaner image that takes the form of whatever our ending clean image is supposed to be. We use the predict_velocity function with a text embedding of "a high quality photo" to compute this vector field.
+      </p>
+      <div class="image-box">
+        <img src="media/1.31.png" alt="">
+      </div>
+
+      <div class="image-box">
+        <img src="media/1.32.png" alt="">
+      </div>
+
+      <div class="image-box">
+        <img src="media/1.33.png" alt="">
+      </div>
+    </div>
+
+    <div class="bear-box">
+      <h3>1.4 Visualizing Velocity</h3>
+      <p class="description-text">
+        Since we are predicting the vector field, there are areas where it is not on the true trajectory across time steps. By comparing the model to our ground truth velocity vector (x_1 - x_0) using root mean square, we are able to see the areas of struggle. 
+      </p>
+      <div class="image-box">
+        <img src="media/1.41.png" alt="">
+      </div>
+
+      <div class="image-box">
+        <img src="media/1.42.png" alt="">
+      </div>
+
+      <div class="image-box">
+        <img src="media/1.43.png" alt="">
+      </div>
+    </div>
+
+    <div class="bear-box">
+      <h3>1.5 Iterative Denoising</h3>
+      <p class="description-text">
+        To increase our accuracy, we take smaller steps each time, reconstructing a more accurate image because learned flow fied trajectories are usually curved. After every increment (25 steps in total), we recompute velocity, and for the last step, we adjust it so it terminates at t=1 exactly.
+      </p>
+      
+      <div class="image-row-3">
+        <div class="image-item">
+          <img src="media/.5.png" alt="">
+          <div class="image-label">t = 0.5</div>
+        </div>
+        <div class="image-item">
+          <img src="media/.6.png" alt="">
+          <div class="image-label">t = 0.6</div>
+        </div>
+        <div class="image-item">
+          <img src="media/.7.png" alt="">
+          <div class="image-label">t = 0.7</div>
+        </div>
+      </div>
+
+      <div class="image-row-3">
+        <div class="image-item">
+          <img src="media/.8.png" alt="">
+          <div class="image-label">t = 0.8</div>
+        </div>
+        <div class="image-item">
+          <img src="media/.9.png" alt="">
+          <div class="image-label">t = 0.9</div>
+        </div>
+        <div class="image-item">
+          <img src="media/1.png" alt="">
+          <div class="image-label">t = 1.0</div>
+        </div>
+      </div>
+      <div class="image-box">
+        <img src="media/1.5.png" alt="">
+      </div>
+    </div>
+
+    <div class="bear-box">
+      <h3>1.6 Generating Images from Noise</h3>
+      <p class="description-text">
+        When we pass in random noise initially (instead of a cleaned image) and use the condition to guide the flow, we get these images for those select seeds.
+      </p>
+      <div class="image-box">
+        <img src="media/1.6.png" alt="">
+      </div>
+    </div>
+
+    <h2 class="section-header">2. Conditional Generation and Guidance</h2>
+
+    <div class="bear-box">
+      <h3>2.1 Classifier-Free Guidance</h3>
+      <p class="description-text">
+        Classifier-free guidance (CFG) will help push trajectories towards a text-conditioned velocity as opposed to just unconditional predictions. When the CFG is ran, a conditional and unconditional velocity is calculated. By setting w, CFG can calculate a weighted direction that will pull the outputs towards the prompt. We set out w to 7. A high w can improve the details of our images (as shown by the comparison between these images and the images from the previous section), but if the w is too high (>10) it can reduce image diversity. We see this sort of happening already with all the humans looking somewhat similar to each other even though they started as different noisy images.
+      </p>
+      <div class="image-box">
+        <img src="media/2.1.png" alt="">
+      </div>
+    </div>
+
+    <h2 class="section-header">3. Creative Applications</h2>
+
+    <div class="bear-box">
+      <h3>3.1 Text-Guided Image Editing / Image-to-Image</h3>
+      <p class="description-text">
+        By adding noise to a clean image, we are able to introduce new pixels for the denoiser to use to come up with a new image. Lower t_start values allows for more different outputs and a higher t_start makes it so the original values of the clean image are preserved more. 
+      </p>
+      <div class="image-box">
+        <img src="media/3.11.png" alt="">
+      </div>
+      <div class="image-box">
+        <img src="media/3.12.png" alt="">
+      </div>
+      <div class="image-box">
+        <img src="media/3.13.png" alt="">
+      </div>
+      <p class="description-text">
+        Hand drawn images or non-realistic images provides a wider canvas for the denoiser to use. Here is how it can be done using 1 image from the web and some drawings I created.
+      </p>
+      <div class="image-box">
+        <img src="media/3.21.png" alt="">
+      </div>
+      <div class="image-box">
+        <img src="media/3.22.png" alt="">
+      </div>
+      <div class="image-box">
+        <img src="media/3.23.png" alt="">
+      </div>
+    </div>
+
+    <div class="bear-box">
+      <h3>3.2 Text-Guided Image Editing</h3>
+      <p class="description-text">
+        So far, we have been using the prompt "a high quality photo" but that is pretty vague as a condition. By using different prompts for each image, we are able to transition from our text description back to the clean image by altering the starting time t. 
+      </p>
+      <div class="image-box">
+        <img src="media/3.31.png" alt="">
+      </div>
+      <div class="image-box">
+        <img src="media/3.32.png" alt="">
+      </div>
+      <div class="image-box">
+        <img src="media/3.33.png" alt="">
+      </div>
+    </div>
+
+    <div class="bear-box">
+      <h3>3.3 Visual Anagrams</h3>
+      <p class="description-text">
+        To create a visual anagram, we can average the CFG velocity predicted for one image and CFG velocity predicted for another image (but slipped 180 degrees). For each euler step, we use this average between these stacked images and when the image converges into a clean image, we can see both.
+      </p>
+      <div class="image-box">
+        <img src="media/original flips.png" alt="">
+      </div>
+      <div class="image-box">
+        <img src="media/3.41.png" alt="">
+      </div>
+      <div class="image-box">
+        <img src="media/3.42.png" alt="">
+      </div>
+    </div>
+
+    <div class="bear-box">
+      <h3>3.4 Hybrid Images</h3>
+      <p class="description-text">
+        Similar to the hybrid images from project 2, combining the low frequency components of one prompt with the high frequency components of another prompt, we create an image that looks different depending on the viewing distance (for the sake of the website, we have included the smaller versions as a demonstration). We first find the CFG of the two prompts and then use Gaussian blurs to extract high and low frequencies before combining them together.
+      </p>
+      
+      <div class="split-row">
+        <div class="large-col"><img src="media/wide skull.png" alt=""></div>
+        <div class="small-col"><img src="media/tiny skull.png" alt=""></div>
+      </div>
+
+      <div class="split-row">
+        <div class="large-col"><img src="media/big cat.png" alt=""></div>
+        <div class="small-col"><img src="media/tiny cat.png" alt=""></div>
+      </div>
+
+      <div class="split-row">
+        <div class="large-col"><img src="media/3.51.png" alt=""></div>
+        <div class="small-col"><img src="media/3.52.png" alt=""></div>
+      </div>
+
+      <div class="split-row">
+        <div class="large-col"><img src="media/3.53.png" alt=""></div>
+        <div class="small-col"><img src="media/3.54.png" alt=""></div>
+      </div>
+    </div>
+
+    <h2 class="part-header">Part B: Flow Matching from Scratch!</h2>
+
+    <h2 class="section-header">Part 1: Training a Single-Step Denoising UNet</h2>
+
+    <div class="bear-box">
+      <h3>1.1 Implementing the UNet, 1.2 Using the UNet to Train a Denoiser</h3>
+      <p class="description-text">
+        A UNet uses encoders and decoders to denoise and classify images. First, we capture the context of the images on a global context by reducing the resolution. After, we expand it back via upsampling to preserve the tiny details.
+Using L2 loss optimization, we map a noisy image to its clean image counterpart in the MNIST dataset.
+      </p>
+    </div>
+
+    <div class="bear-box">
+      <h3>1.2 Using the UNet to Train a Single-Step Denoiser</h3>
+      <p class="description-text">
+        For every epoch, we generate a fresh noise combination. This will help the model generalize better and avoid overfitting any static artifacts. This is the training data, along with an Adam optimizer, that our denoiser will be following. We have shown the clean/input/prediction after epochs 1 and 5. We have also included the noise levels by rows after this simple training loop. Lastly, we can see how the training loss gets less and less each epoch, as the model leanrs more.
+      </p>
+      <div class="image-box">
+        <img src="media/1.2.1.png" alt="">
+      </div>
+      <div class="image-box">
+        <img src="media/epoch4.1.png" alt="">
+      </div>
+      <div class="image-box">
+        <img src="media/21.png" alt="">
+      </div>
+      <div class="image-box">
+        <img src="media/1.2.12.png" alt="">
+      </div>
+      <p class="description-text">
+        What happens if we use a single-step denoiser (the one we just trained) on noise levels and parameters that are out of distribution. This allows us to better evaluate how degradation levels outside a model's training can be handled and how well it will be handled. As you can see, when it gets to the extremely noisy images, the resulting images are not as clear.
+      </p>
+      <div class="image-box">
+        <img src="media/1.2.2.png" alt="">
+      </div>
+      <p class="description-text">
+        When we try to train a model to denoise pure noise, we can see how the outputs seem to be blurry and does not take the forms of any specific digit. And even after 5 epochs, there is very little change between the outputs. Since we use MSE as our loss function, it tries to minimize the distance from all the training examples. This results in an average of all the images, which causes more pixels in the center (since most handwritten digits will cross the center pixels) to be brighter.
+      </p>
+      <div class="image-box">
+        <img src="media/epoch4.2.png" alt="">
+      </div>
+      <div class="image-box">
+        <img src="media/1.2.3.png" alt="">
+      </div>
+      <div class="image-box">
+        <img src="media/1.2.32.png" alt="">
+      </div>
+    </div>
+
+    <h2 class="section-header">Part 2: Flow Matching Training and Sampling</h2>
+
+    <div class="bear-box">
+      <h3>2.1 Time-Conditioned UNet</h3>
+      <p class="description-text">
+	Using FCBlock (fully connected block), we are able to be more dynamic during the intermediate stages of our analysis. The FCBlock makes the internal feature map more individualized and scaling each one independently. Based on how noisy our input is, each internal feature such as unflattening and unsampling are scaled dynamically during the process.
+      </p>
+    </div>
+
+    <div class="bear-box">
+      <h3>2.2 Training the Flow Matching Model, 2.3 Sampling from the UNet</h3>
+      <p class="description-text">
+        Now we will implement an exponential learning rate scheduler. By predicting the velocity across a linear interpolation path, our optimization target is much smoother than if we just try to predict different jumps. We now take pure Gaussian noise and use the predict velocities to get to clear digits. This contrasts our previous implementation with MSE loss where pure noise didn't really amount to much.
+      </p>
+      <div class="image-box">
+        <img src="media/2.21.png" alt="">
+      </div>
+      <div class="image-box">
+        <img src="media/2.22.png" alt="">
+      </div>
+      <div class="image-box">
+        <img src="media/2.23.png" alt="">
+      </div>
+      <div class="image-box">
+        <img src="media/2.24.png" alt="">
+      </div>
+    </div>
+
+    <div class="bear-box">
+      <h3>2.4-2.6 Adding Class-Conditioning to UNet then Training and Sampling, </h3>
+      <p class="description-text">
+        Now we extend our implementation. We add one-hot class labels and a 10% dropout mechanism; the one-hot class label creates a distinct categorical indicator. The block now has class information with time data that gives the model more information about the digit they are generating. We train the model on conditional and unconditional inputs, which were created by randomly replacing inputs in the class vectors to zero during the training process (10% dropout mechanism). This makes it so the model is able to generate with or without guidance during sampling. 
+      </p>
+      <div class="image-box">
+        <img src="media/2.33.png" alt="">
+      </div>
+      <div class="image-box">
+        <img src="media/2.32.png" alt="">
+      </div>
+      <div class="image-box">
+        <img src="media/2.34.png" alt="">
+      </div>
+      <div class="image-box">
+        <img src="media/2.31.png" alt="">
+      </div>
+    </div>
+
+    <div class="bear-box">
+      <h3>Without the learning rate scheduler</h3>
+      <p class="description-text">
+        What happens if we don't step through the scheduler? The results looks quite similar as the one in the scheduler. By being trained on conditional and unconditional data, the model is able to tune their hyperparameters to compensate for the missing scheduler.
+      </p>
+      <div class="image-box">
+        <img src="media/2.42.png" alt="">
+      </div>
+      <div class="image-box">
+        <img src="media/2.43.png" alt="">
+      </div>
+      <div class="image-box">
+        <img src="media/3.44.png" alt="">
+      </div>
+      <div class="image-box">
+        <img src="media/2.41.png" alt="">
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>
