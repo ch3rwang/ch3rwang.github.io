@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project 4A: IMAGE WARPING and MOSAICING</title>
+    <style>
+        /* Cafe Color Palette Variables */
+        :root {
+            --bg-color: #f7f3ed;         /* Warm Cream / Light Latte */
+            --card-bg: #ffffff;          /* Soft White */
+            --inner-bg: #faf7f2;         /* Slightly darker warm tone for inner elements */
+            --primary-dark: #3d2314;     /* Deep Espresso */
+            --accent-brown: #795548;     /* Warm Roast Brown */
+            --secondary-warm: #a1887f;   /* Light Mocha */
+            --border-color: #e0d7cd;     /* Gentle Cream Border */
+            --text-muted: #5c4e46;       /* Warm Taupe */
+            --code-bg: #efebe4;          /* Soft Warm Gray/Beige */
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-dark);
+            margin: 0;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px dashed var(--secondary-warm);
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Outer Section Box */
+        .section-box {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 45px;
+            box-shadow: 0 4px 16px rgba(61, 35, 20, 0.05);
+        }
+
+        .section-title {
+            font-size: 1.6rem;
+            color: var(--accent-brown);
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-weight: 600;
+            border-bottom: 2px solid var(--secondary-warm);
+            padding-bottom: 8px;
+        }
+
+        .description {
+            max-width: 850px;
+            margin: 0 0 25px 0;
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        /* Image Group Sub-Section */
+        .image-group {
+            background-color: var(--inner-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+        }
+
+        .group-title {
+            font-size: 1.15rem;
+            color: var(--primary-dark);
+            margin-top: 0;
+            margin-bottom: 16px;
+            border-left: 4px solid var(--accent-brown);
+            padding-left: 10px;
+        }
+
+        /* 3-Column Grid for Images */
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            align-items: start;
+        }
+
+        /* 2-Column Grid for Images */
+        .image-grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            align-items: start;
+        }
+
+        /* Single Image Container */
+        .single-image-container {
+            display: flex;
+            justify-content: center;
+        }
+
+        .single-image-container figure {
+            max-width: 600px;
+            width: 100%;
+        }
+
+        figure {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--card-bg);
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        figure img {
+            width: 100%;
+            height: auto;
+            max-height: 450px;
+            object-fit: contain;
+            border-radius: 4px;
+            background-color: #e3dcd3;
+        }
+
+        figcaption {
+            margin-top: 10px;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        /* Equations & Math Container */
+        .math-box {
+            background-color: var(--inner-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .equation-display {
+            background-color: var(--code-bg);
+            border-radius: 6px;
+            padding: 16px;
+            text-align: center;
+            font-family: "Georgia", "Times New Roman", serif;
+            font-size: 1.05rem;
+            color: var(--primary-dark);
+            overflow-x: auto;
+            margin: 10px 0 0 0;
+        }
+
+        /* Matrix styling matching reference layout */
+        .matrix {
+            display: inline-flex;
+            align-items: center;
+            margin: 0 4px;
+            vertical-align: middle;
+        }
+
+        .matrix-brackets {
+            display: inline-flex;
+            border-left: 2px solid var(--primary-dark);
+            border-right: 2px solid var(--primary-dark);
+            border-radius: 4px;
+            padding: 2px 8px;
+        }
+
+        .matrix-table {
+            border-collapse: collapse;
+            text-align: center;
+        }
+
+        .matrix-table td {
+            padding: 4px 6px;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- Header Section -->
+        <header>
+            <h1>Project 4A: IMAGE WARPING and MOSAICING</h1>
+        </header>
+
+        <main>
+            <!-- SECTION A.1 BOX -->
+            <section class="section-box" id="section-a1">
+                <h2 class="section-title">A.1: Shoot the Pictures</h2>
+                <p class="description">
+                    To shoot photos with a projective transformation, we should stand somewhere and rotate while taking pictures. This makes us have a fixed center of projection. I took pictures in a busy cafe, outside in a geometric building, and inside a complex architectural build. For each location, I took a photo of it straight on and then turned a bit to the left and right to get 3 pictures with projective transformations.
+                </p>
+
+                <!-- Image Group 1 -->
+                <div class="image-group">
+                    <h3 class="group-title">Image Set 1: Free Speech Movement Cafe</h3>
+                    <div class="image-grid">
+                        <figure>
+                            <img src="media/cafe_left.png" alt="Left View">
+                            <figcaption>cafe_left.png</figcaption>
+                        </figure>
+                        <figure>
+                            <img src="media/cafe_center.png" alt="Center View">
+                            <figcaption>cafe_center.png</figcaption>
+                        </figure>
+                        <figure>
+                            <img src="media/cafe_right.png" alt="Right View">
+                            <figcaption>cafe_right.png</figcaption>
+                        </figure>
+                    </div>
+                </div>
+
+                <!-- Image Group 2 -->
+                <div class="image-group">
+                    <h3 class="group-title">Image Set 2: Building Front</h3>
+                    <div class="image-grid">
+                        <figure>
+                            <img src="media/building_left.png" alt="Left View">
+                            <figcaption>building_left.png</figcaption>
+                        </figure>
+                        <figure>
+                            <img src="media/building_center.png" alt="Center View">
+                            <figcaption>building_center.png</figcaption>
+                        </figure>
+                        <figure>
+                            <img src="media/building_right.png" alt="Right View">
+                            <figcaption>building_right.png</figcaption>
+                        </figure>
+                    </div>
+                </div>
+
+                <!-- Image Group 3 -->
+                <div class="image-group">
+                    <h3 class="group-title">Image Set 3: Inside Gateway</h3>
+                    <div class="image-grid">
+                        <figure>
+                            <img src="media/gateway_left.png" alt="Left View">
+                            <figcaption>gateway_left.png</figcaption>
+                        </figure>
+                        <figure>
+                            <img src="media/gateway_center.png" alt="Center View">
+                            <figcaption>gateway_center.png</figcaption>
+                        </figure>
+                        <figure>
+                            <img src="media/gateway_right.png" alt="Right View">
+                            <figcaption>gateway_right.png</figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- SECTION A.2 BOX -->
+            <section class="section-box" id="section-a2">
+                <h2 class="section-title">A.2: Recover Homographies</h2>
+                <p class="description">
+                    To warp one image into the coordinate system of another, we need a homography matrix (denoted as H) to map the points from one image to another. We first collect 8 points using ginput and selecting 8 corresponding points (shown below). The last entry in our matrix is a 1 in order to retain the scale of the image. These are populated into A as the original points, and b represents the target coordinates. This is an overdetermined system due to the high quantity of points we are using, so least squares is used to average out the noise. By solving Ah = b, we can get the homography matrix that will map the original points (A) to the target points (b).
+                </p>
+
+                <!-- SET 1: Correspondence & Math -->
+                <div class="image-group">
+                    <h3 class="group-title">Image Set 1: Point Correspondences</h3>
+                    <div class="single-image-container">
+                        <figure>
+                            <img src="media/correspondence.png" alt="Point Correspondences 1">
+                            <figcaption>Visualized point correspondences between source and target images (Set 1).</figcaption>
+                        </figure>
+                    </div>
+                </div>
+
+                <div class="math-box">
+                    <h3 class="group-title">Set 1: System of Equations (Ah=b)</h3>                    
+                    <div class="equation-display">
+                        <div class="matrix">
+                            <div class="matrix-brackets">
+                                <table class="matrix-table">
+                                    <tr><td>4.8548e+02</td><td>8.0631e+02</td><td>1.0</td><td>0.0</td><td>0.0</td><td>0.0</td><td>-3.4573e+04</td><td>-5.7420e+04</td></tr>
+                                    <tr><td>0.0</td><td>0.0</td><td>0.0</td><td>4.8548e+02</td><td>8.0631e+02</td><td>1.0</td><td>-3.9749e+05</td><td>-6.6017e+05</td></tr>
+                                    <tr><td>5.1343e+02</td><td>6.9450e+02</td><td>1.0</td><td>0.0</td><td>0.0</td><td>0.0</td><td>-5.9318e+04</td><td>-8.0236e+04</td></tr>
+                                    <tr><td>0.0</td><td>0.0</td><td>0.0</td><td>5.1343e+02</td><td>6.9450e+02</td><td>1.0</td><td>-3.5991e+05</td><td>-4.8684e+05</td></tr>
+                                    <tr><td>4.6388e+02</td><td>5.2932e+02</td><td>1.0</td><td>0.0</td><td>0.0</td><td>0.0</td><td>-3.4209e+04</td><td>-3.9035e+04</td></tr>
+                                    <tr><td>0.0</td><td>0.0</td><td>0.0</td><td>4.6388e+02</td><td>5.2932e+02</td><td>1.0</td><td>-2.4294e+05</td><td>-2.7722e+05</td></tr>
+                                    <tr><td>5.9602e+02</td><td>6.5765e+02</td><td>1.0</td><td>0.0</td><td>0.0</td><td>0.0</td><td>-1.2697e+05</td><td>-1.4010e+05</td></tr>
+                                    <tr><td>0.0</td><td>0.0</td><td>0.0</td><td>5.9602e+02</td><td>6.5765e+02</td><td>1.0</td><td>-3.9592e+05</td><td>-4.3686e+05</td></tr>
+                                    <tr><td>7.9169e+02</td><td>4.7850e+02</td><td>1.0</td><td>0.0</td><td>0.0</td><td>0.0</td><td>-3.1401e+05</td><td>-1.8979e+05</td></tr>
+                                    <tr><td>0.0</td><td>0.0</td><td>0.0</td><td>7.9169e+02</td><td>4.7850e+02</td><td>1.0</td><td>-3.9056e+05</td><td>-2.3606e+05</td></tr>
+                                    <tr><td>6.1000e+02</td><td>3.7813e+02</td><td>1.0</td><td>0.0</td><td>0.0</td><td>0.0</td><td>-1.3767e+05</td><td>-8.5341e+04</td></tr>
+                                    <tr><td>0.0</td><td>0.0</td><td>0.0</td><td>6.1000e+02</td><td>3.7813e+02</td><td>1.0</td><td>-2.3064e+05</td><td>-1.4297e+05</td></tr>
+                                    <tr><td>8.2345e+02</td><td>7.8979e+02</td><td>1.0</td><td>0.0</td><td>0.0</td><td>0.0</td><td>-3.3182e+05</td><td>-3.1826e+05</td></tr>
+                                    <tr><td>0.0</td><td>0.0</td><td>0.0</td><td>8.2345e+02</td><td>7.8979e+02</td><td>1.0</td><td>-6.3875e+05</td><td>-6.1264e+05</td></tr>
+                                    <tr><td>5.9856e+02</td><td>8.5713e+02</td><td>1.0</td><td>0.0</td><td>0.0</td><td>0.0</td><td>-1.1918e+05</td><td>-1.7066e+05</td></tr>
+                                    <tr><td>0.0</td><td>0.0</td><td>0.0</td><td>5.9856e+02</td><td>8.5713e+02</td><td>1.0</td><td>-5.1736e+05</td><td>-7.4085e+05</td></tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="matrix">
+                            <div class="matrix-brackets">
+                                <table class="matrix-table">
+                                    <tr><td>h<sub>1</sub></td></tr>
+                                    <tr><td>h<sub>2</sub></td></tr>
+                                    <tr><td>h<sub>3</sub></td></tr>
+                                    <tr><td>h<sub>4</sub></td></tr>
+                                    <tr><td>h<sub>5</sub></td></tr>
+                                    <tr><td>h<sub>6</sub></td></tr>
+                                    <tr><td>h<sub>7</sub></td></tr>
+                                    <tr><td>h<sub>8</sub></td></tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        &nbsp;=&nbsp;
+
+                        <div class="matrix">
+                            <div class="matrix-brackets">
+                                <table class="matrix-table">
+                                    <tr><td>71.2131</td></tr>
+                                    <tr><td>818.7532</td></tr>
+                                    <tr><td>115.5313</td></tr>
+                                    <tr><td>700.9935</td></tr>
+                                    <tr><td>73.7456</td></tr>
+                                    <tr><td>523.7208</td></tr>
+                                    <tr><td>213.0313</td></tr>
+                                    <tr><td>664.2727</td></tr>
+                                    <tr><td>396.6352</td></tr>
+                                    <tr><td>493.3312</td></tr>
+                                    <tr><td>225.6936</td></tr>
+                                    <tr><td>378.1039</td></tr>
+                                    <tr><td>402.9664</td></tr>
+                                    <tr><td>775.7013</td></tr>
+                                    <tr><td>199.1027</td></tr>
+                                    <tr><td>864.3377</td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="math-box">
+                    <h3 class="group-title">Set 1: Recovered Homography Matrix (H)</h3>                    
+                    <div class="equation-display">
+                        H = 
+                        <div class="matrix">
+                            <div class="matrix-brackets">
+                                <table class="matrix-table">
+                                    <tr><td> 1.46446778e+00</td><td>-7.99096431e-02</td><td>-5.48505562e+02</td></tr>
+                                    <tr><td> 3.77471697e-01</td><td> 1.31676873e+00</td><td>-2.13561577e+02</td></tr>
+                                    <tr><td> 6.04236273e-04</td><td>-4.63347581e-05</td><td> 1.00000000e+00</td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SET 2: Correspondence & Math -->
+                <div class="image-group">
+                    <h3 class="group-title">Image Set 2: Point Correspondences</h3>
+                    <div class="single-image-container">
+                        <figure>
+                            <img src="media/c2.png" alt="Point Correspondences 2">
+                            <figcaption>Visualized point correspondences between source and target images (Set 2).</figcaption>
+                        </figure>
+                    </div>
+                </div>
+
+                <div class="math-box">
+                    <h3 class="group-title">Set 2: System of Equations (Ah=b)</h3>                    
+                    <div class="equation-display">
+                        <div class="matrix">
+                            <div class="matrix-brackets">
+                                <table class="matrix-table">
+                                    <tr><td>5.7989e+02</td><td>9.3491e+02</td><td>1.0</td><td>0.0</td><td>0.0</td><td>0.0</td><td>-8.1379e+04</td><td>-1.3120e+05</td></tr>
+                                    <tr><td>0.0</td><td>0.0</td><td>0.0</td><td>5.7989e+02</td><td>9.3491e+02</td><td>1.0</td><td>-5.4070e+05</td><td>-8.7172e+05</td></tr>
+                                    <tr><td>7.4169e+02</td><td>8.2620e+02</td><td>1.0</td><td>0.0</td><td>0.0</td><td>0.0</td><td>-2.3719e+05</td><td>-2.6421e+05</td></tr>
+                                    <tr><td>0.0</td><td>0.0</td><td>0.0</td><td>7.4169e+02</td><td>8.2620e+02</td><td>1.0</td><td>-6.0094e+05</td><td>-6.6941e+05</td></tr>
+                                    <tr><td>7.2652e+02</td><td>7.0359e+02</td><td>1.0</td><td>0.0</td><td>0.0</td><td>0.0</td><td>-2.3233e+05</td><td>-2.2500e+05</td></tr>
+                                    <tr><td>0.0</td><td>0.0</td><td>0.0</td><td>7.2652e+02</td><td>7.0359e+02</td><td>1.0</td><td>-5.0913e+05</td><td>-4.9305e+05</td></tr>
+                                    <tr><td>7.0630e+02</td><td>6.0120e+02</td><td>1.0</td><td>0.0</td><td>0.0</td><td>0.0</td><td>-2.2856e+05</td><td>-1.9455e+05</td></tr>
+                                    <tr><td>0.0</td><td>0.0</td><td>0.0</td><td>7.0630e+02</td><td>6.0120e+02</td><td>1.0</td><td>-4.2843e+05</td><td>-3.6468e+05</td></tr>
+                                    <tr><td>6.9492e+02</td><td>5.0513e+02</td><td>1.0</td><td>0.0</td><td>0.0</td><td>0.0</td><td>-2.2311e+05</td><td>-1.6218e+05</td></tr>
+                                    <tr><td>0.0</td><td>0.0</td><td>0.0</td><td>6.9492e+02</td><td>5.0513e+02</td><td>1.0</td><td>-3.5962e+05</td><td>-2.6140e+05</td></tr>
+                                    <tr><td>6.5447e+02</td><td>4.1917e+02</td><td>1.0</td><td>0.0</td><td>0.0</td><td>0.0</td><td>-1.9430e+05</td><td>-1.2444e+05</td></tr>
+                                    <tr><td>0.0</td><td>0.0</td><td>0.0</td><td>6.5447e+02</td><td>4.1917e+02</td><td>1.0</td><td>-2.7872e+05</td><td>-1.7851e+05</td></tr>
+                                    <tr><td>4.8256e+02</td><td>5.6580e+02</td><td>1.0</td><td>0.0</td><td>0.0</td><td>0.0</td><td>-1.2361e+05</td><td>-1.4493e+05</td></tr>
+                                    <tr><td>0.0</td><td>0.0</td><td>0.0</td><td>4.8256e+02</td><td>5.6580e+02</td><td>1.0</td><td>-1.5821e+05</td><td>-1.8551e+05</td></tr>
+                                    <tr><td>6.0138e+02</td><td>3.3701e+02</td><td>1.0</td><td>0.0</td><td>0.0</td><td>0.0</td><td>-5.9137e+04</td><td>-3.3139e+04</td></tr>
+                                    <tr><td>0.0</td><td>0.0</td><td>0.0</td><td>6.0138e+02</td><td>3.3701e+02</td><td>1.0</td><td>-3.2117e+05</td><td>-1.7998e+05</td></tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="matrix">
+                            <div class="matrix-brackets">
+                                <table class="matrix-table">
+                                    <tr><td>h<sub>1</sub></td></tr>
+                                    <tr><td>h<sub>2</sub></td></tr>
+                                    <tr><td>h<sub>3</sub></td></tr>
+                                    <tr><td>h<sub>4</sub></td></tr>
+                                    <tr><td>h<sub>5</sub></td></tr>
+                                    <tr><td>h<sub>6</sub></td></tr>
+                                    <tr><td>h<sub>7</sub></td></tr>
+                                    <tr><td>h<sub>8</sub></td></tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        &nbsp;=&nbsp;
+
+                        <div class="matrix">
+                            <div class="matrix-brackets">
+                                <table class="matrix-table">
+                                    <tr><td>140.3347</td></tr>
+                                    <tr><td>932.4091</td></tr>
+                                    <tr><td>319.7893</td></tr>
+                                    <tr><td>810.2273</td></tr>
+                                    <tr><td>319.7893</td></tr>
+                                    <tr><td>700.7727</td></tr>
+                                    <tr><td>323.6074</td></tr>
+                                    <tr><td>606.5909</td></tr>
+                                    <tr><td>321.0620</td></tr>
+                                    <tr><td>517.5000</td></tr>
+                                    <tr><td>296.8802</td></tr>
+                                    <tr><td>425.8636</td></tr>
+                                    <tr><td>256.1529</td></tr>
+                                    <tr><td>327.8636</td></tr>
+                                    <tr><td>98.3347</td></tr>
+                                    <tr><td>534.0455</td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="math-box">
+                    <h3 class="group-title">Set 2: Recovered Homography Matrix (H)</h3>                    
+                    <div class="equation-display">
+                        H = 
+                        <div class="matrix">
+                            <div class="matrix-brackets">
+                                <table class="matrix-table">
+                                    <tr><td>-3.67973015e-01</td><td>-1.01814456e-01</td><td> 2.80012189e+02</td></tr>
+                                    <tr><td>-5.90619331e-01</td><td>-3.96781376e-01</td><td> 5.67809506e+02</td></tr>
+                                    <tr><td>-1.15735042e-03</td><td>-5.05039421e-04</td><td> 1.00000000e+00</td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+
+            <!-- SECTION A.3 BOX -->
+            <section class="section-box" id="section-a3">
+                <h2 class="section-title">A.3: Warp the Images</h2>
+                <p class="description">
+                    To make a rectangular shape that has been warpped back to a rectangle, we can't just move pixels around since that would leave gaps in our display. Instead, we will use the inverse of the homography matrix we found before to see where it came from and sample the pixel value from the same source location. There are two interpolation methods we can use: nearest neighbor and bilinear. For nearest neighbor, the algorithm quickly rounds the source coordinate to the closest pixel (nearest neighbor). For bilinear interpolation, instead of just 1 pixel being chosen (the closest one), the 4 surrounding pixels are weighed based on how far from the target pixel and their values are scaled accordingly. As you can see, the nearest neighbor sampling makes straight lines more jagged since there is no smoothing factor that comes from averaging multiple pixels. This is extremely evident on the left side of the lamp box (image 1). When the inputs are blurry (like the projector screen), the differences are harder to catch.
+                </p>
+
+                <!-- First Row of 3 Images -->
+                <div class="image-group">
+                    <h3 class="group-title">Warping Results: Box</h3>
+                    <div class="image-grid">
+                        <figure>
+                            <img src="media/box.png" alt="Warped Image 1">
+                            <figcaption>Original Image</figcaption>
+                        </figure>
+                        <figure>
+                            <img src="media/NN1.png" alt="Warped Image 2">
+                            <figcaption>Nearest Neighbor Warp</figcaption>
+                        </figure>
+                        <figure>
+                            <img src="media/B1.png" alt="Warped Image 3">
+                            <figcaption>Bilinear Warp</figcaption>
+                        </figure>
+                    </div>
+                    <div class="image-grid" style="margin-top: 16px;">
+                        <figure>
+                            <img src="media/box.png" alt="Warped Image 1">
+                            <figcaption>Original Image</figcaption>
+                        </figure>
+                        <figure>
+                            <img src="media/cNN1.png" alt="Warped Image 2">
+                            <figcaption>Cropped Nearest Neighbor Warp</figcaption>
+                        </figure>
+                        <figure>
+                            <img src="media/cB1.png" alt="Warped Image 3">
+                            <figcaption>Cropped Bilinear Warp</figcaption>
+                        </figure>
+                    </div>
+                </div>
+
+                <!-- Second Row of 3 Images -->
+                <div class="image-group">
+                    <h3 class="group-title">Warping Results: Menu</h3>
+                    <div class="image-grid">
+                        <figure>
+                            <img src="media/menu.png" alt="Warped Image 4">
+                            <figcaption>Original Image</figcaption>
+                        </figure>
+                        <figure>
+                            <img src="media/NN3.png" alt="Warped Image 5">
+                            <figcaption>Nearest Neighbor Warp</figcaption>
+                        </figure>
+                        <figure>
+                            <img src="media/B3.png" alt="Warped Image 6">
+                            <figcaption>Bilinear Warp</figcaption>
+                        </figure>
+                    </div>
+                    <div class="image-grid" style="margin-top: 16px;">
+                        <figure>
+                            <img src="media/menu.png" alt="Warped Image 4">
+                            <figcaption>Original Image</figcaption>
+                        </figure>
+                        <figure>
+                            <img src="media/cNN3.png" alt="Warped Image 5">
+                            <figcaption>Cropped Nearest Neighbor Warp</figcaption>
+                        </figure>
+                        <figure>
+                            <img src="media/cB3.png" alt="Warped Image 6">
+                            <figcaption>Cropped Bilinear Warp</figcaption>
+                        </figure>
+                    </div>
+                </div>
+
+                <!-- Third Row of 3 Images -->
+                <div class="image-group">
+                    <h3 class="group-title">Warping Results: Projector</h3>
+                    <div class="image-grid">
+                        <figure>
+                            <img src="media/projector.png" alt="Warped Image 4">
+                            <figcaption>Original Image</figcaption>
+                        </figure>
+                        <figure>
+                            <img src="media/NN2.png" alt="Warped Image 5">
+                            <figcaption>Nearest Neighbor Warp</figcaption>
+                        </figure>
+                        <figure>
+                            <img src="media/B2.png" alt="Warped Image 6">
+                            <figcaption>Bilinear Warp</figcaption>
+                        </figure>
+                    </div>
+                    <div class="image-grid" style="margin-top: 16px;">
+                        <figure>
+                            <img src="media/projector.png" alt="Warped Image 4">
+                            <figcaption>Original Image</figcaption>
+                        </figure>
+                        <figure>
+                            <img src="media/cNN2.png" alt="Warped Image 5">
+                            <figcaption>Cropped Nearest Neighbor Warp</figcaption>
+                        </figure>
+                        <figure>
+                            <img src="media/cB2.png" alt="Warped Image 6">
+                            <figcaption>Cropped Bilinear Warp</figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- SECTION A.4 BOX -->
+            <section class="section-box" id="section-a4">
+                <h2 class="section-title">A.4: Blend the Images into a Mosaic</h2>
+                <div class="description">
+    To create the mosaic out of these individual images, we use the center image as reference and use the homography matrices to create projective transformations on the left and right images to match the details on the center one. By using alphas and weights, we are able to make the center of the image the strongest and have it fade on the edges as it connects to other images that would also provide details and context. The procedure goes like this:
+    
+    <ol style="margin-top: 10px; padding-left: 20px;">
+        <li>We find the matching points between the left and center images and the right and center images (using ginput).</li>
+        <li>Compute the homographies for each pair using our algorithm from part A.2.</li>
+        <li>Using the different matrices we get back and the 4 corners of each image, we figure out the maximum size of our output and set our output to this so we don't end up accidentally cropping, especially on the left since we use the center image as our center as well.</li>
+        <li>Each image is inversed wrapped (part A.3) using bilinear interpolation, since this prevents the jagged edges that comes with nearest neighbor.</li>
+        <li>Feathering, which uses a weighted average to remove seams, is implemented so each image does not have a hard seam at the edges. By weighing the edges less, the images can fade into each other creating a smooth mosaic.</li>
+    </ol>
+		</div>
+
+                <!-- Mosaic Row 1 -->
+                <div class="image-group">
+                    <h3 class="group-title">Mosaic Set 1: Free Speech Movement Cafe</h3>
+                    <div class="image-grid" style="margin-bottom: 16px;">
+                        <figure>
+                            <img src="media/cafe_left.png" alt="Left View">
+                            <figcaption>cafe_left.png</figcaption>
+                        </figure>
+                        <figure>
+                            <img src="media/cafe_center.png" alt="Center View">
+                            <figcaption>cafe_center.png</figcaption>
+                        </figure>
+                        <figure>
+                            <img src="media/cafe_right.png" alt="Right View">
+                            <figcaption>cafe_right.png</figcaption>
+                        </figure>
+                    </div>
+                    <!-- 2-Image Row directly under the first mosaic -->
+                    <div class="image-grid-2">
+                        <figure>
+                            <img src="media/mosaic1.png" alt="Mosaic Detail Left">
+                            <figcaption>Original Mosaic (Ghosting)</figcaption>
+                        </figure>
+                        <figure>
+                            <img src="media/m1.png" alt="Mosaic Detail Right">
+                            <figcaption>Mosaic with Laplacian Blending</figcaption>
+                        </figure>
+                    </div>
+		    <p class="description">
+                    As you can see, the feathering causes ghosting, which is where we see double of some elements. To fix this, we use a 2 level Laplacian blend (similar to project 2). The low frequencies help give the color a smooth transition while the high frequencies are sampled from the image that has a larger weight on the pixel (usually means its closer to the center of the taken picture). Lastly, the normalization helps us not accidentally blend the black background we have on our output image.
+                    </p>
+                    <div class="single-image-container" style="margin-bottom: 16px;">
+                        <figure>
+                            <img src="media/m1.png" alt="Final Mosaic 1">
+                            <figcaption>Final Stitched Mosaic (Free Speech Movement Cafe)</figcaption>
+                        </figure>
+                    </div>
+                </div>
+
+                <!-- Mosaic Row 2 -->
+                <div class="image-group">
+                    <h3 class="group-title">Mosaic Set 2: Building Front</h3>
+                    <div class="image-grid" style="margin-bottom: 16px;">
+                        <figure>
+                            <img src="media/building_left.png" alt="Left View">
+                            <figcaption>building_left.png</figcaption>
+                        </figure>
+                        <figure>
+                            <img src="media/building_center.png" alt="Center View">
+                            <figcaption>building_center.png</figcaption>
+                        </figure>
+                        <figure>
+                            <img src="media/building_right.png" alt="Right View">
+                            <figcaption>building_right.png</figcaption>
+                        </figure>
+                    </div>
+                    <div class="single-image-container">
+                        <figure>
+                            <img src="media/m2.png" alt="Final Mosaic 2">
+                            <figcaption>Final Stitched Mosaic (Building)</figcaption>
+                        </figure>
+                    </div>
+                </div>
+
+                <!-- Mosaic Row 3 -->
+                <div class="image-group">
+                    <h3 class="group-title">Mosaic Set 3: Inside Gateway</h3>
+                    <div class="image-grid" style="margin-bottom: 16px;">
+                        <figure>
+                            <img src="media/gateway_left.png" alt="Left View">
+                            <figcaption>gateway_left.png</figcaption>
+                        </figure>
+                        <figure>
+                            <img src="media/gateway_center.png" alt="Center View">
+                            <figcaption>gateway_center.png</figcaption>
+                        </figure>
+                        <figure>
+                            <img src="media/gateway_right.png" alt="Right View">
+                            <figcaption>gateway_right.png</figcaption>
+                        </figure>
+                    </div>
+                    <div class="single-image-container">
+                        <figure>
+                            <img src="media/m3.png" alt="Final Mosaic 3">
+                            <figcaption>Final Stitched Mosaic (Gateway)</figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+    </div>
+
+</body>
+</html>
