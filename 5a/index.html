@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project 4A: IMAGE WARPING and MOSAICING</title>
+    <title>Project 4: (Auto)stitching and Photo Mosaics</title>
     <style>
         :root {
             --bg-color: #f7f3ed;         
@@ -160,7 +160,6 @@
             margin: 10px 0 0 0;
         }
 
-        /* Matrix styling matching reference layout */
         .matrix {
             display: inline-flex;
             align-items: center;
@@ -194,7 +193,7 @@
         
         <!-- Header Section -->
         <header>
-            <h1>Project 4A: Image Warping and Mosaicing</h1>
+            <h1>Project 4: (Auto)stitching and Photo Mosaics</h1>
         </header>
 
         <main>
@@ -673,6 +672,133 @@
                             <img src="media/m3.png" alt="Final Mosaic 3">
                             <figcaption>Final Stitched Mosaic (Gateway)</figcaption>
                         </figure>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="section-box" id="section-b1">
+                <h2 class="section-title">B.1: Harris Corner Detection</h2>
+                <div class="description">
+                    Harris corners identify points on the image where the intensity changes drastically in multiple directions. By using the determinant and trace of the image gradients of a smoothed image, we are pinpoint areas of intensity variation. When the get_harris_corners() was ran, there were too many points that the image was crowded, so we eliminated less distinct features. As you can see, the points are around architectural details and textured regions. After getting a list of harris corners, adaptive non-maximal suppression (ANMS) selects a portion of the corners that would point to specific features. It also makes sure these features are properly spread out in order to describe the full image. One issue mentioned in the paper is that we don't want to only use strong harris corners since they are more likely than not to be concentrated in the same area. Using a suppression radius and a robustness constant of 0.9, we are able to spread the corners around a bit better. With ANMS, the points are highlighting specific details/features, like the windows and the cars, on the image while still being pretty spread out in order to get a good representation of the whole image.
+                </div>
+
+                <div class="image-group">
+                    <h3 class="group-title">Points Before and After ANMS</h3>
+                    <div class="single-image-container">
+                        <figure>
+                            <img src="media/ANME.png" alt="Harris Response">
+                        </figure>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION B.2 BOX -->
+            <section class="section-box" id="section-b2">
+                <h2 class="section-title">B.2: Feature Descriptor Extraction</h2>
+                <div class="description">
+                   With the ANMS corners selected, we now can find the feature descriptors needed to represent the image. To capture the broad structures and not get caught up on the specific details, the image is first greyscaled then Gaussian blurred. Each patch is a 40x40 window around an ANMS corner and every 5th pixel is selected to get the 40x40 window down to the target 8x8 patch. To make the descriptors less sensitive to brightness or contrast between overlapping photos, we had to do bias and gain normalization on the patches. Removing near-zero SD descriptors makes it so we won't have any numerical instability. From the features of the building, you can faintly make out portions of the trees, edges of the roof, and car details which does a good job summarizing the original image.
+                </div>
+
+                <div class="image-group">
+                    <h3 class="group-title">Feature and Descriptors</h3>
+                    <div class="single-image-container">
+                        <figure>
+                            <img src="media/part2.png" alt="ANMS Points">
+                            <figcaption>Extracted normalized 8x8 feature descriptors and extracted features</figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION B.3 BOX -->
+            <section class="section-box" id="section-b3">
+                <h2 class="section-title">B.3: Feature Descriptor Extraction</h2>
+                <div class="description">
+                   Using the nearest neighbor ratio test, we are able to match points of overlapping photos. Using cdist, we can identify the descriptors that are the most similar because they should have the lowest feature-space distances. If the ratio of the closest and second closest match was below the selected ratio of 0.7, we can confidently believe that there are differences between a correct and incorrect match. This makes sure repetitive patterns and ambiguous matching does not happen. If it is a distinctive feature, it should only have one close match. The pairs are connected in green for ease of viewing and to see if the features are mapped properly. As you can see, there are some errors but the Lowe's nearest neighbor ratio test is helpful is removing the bulk of the ambiguities.
+                </div>
+
+                <div class="image-group">
+                    <h3 class="group-title">Feature Matches using the Lowe's Ratio Test</h3>
+                    <div class="single-image-container">
+                        <figure>
+                            <img src="media/part3.png" alt="Feature Matches">
+                            <figcaption>Matched feature points between overlapping image pairs</figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION B.4 BOX -->
+            <section class="section-box" id="section-b4">
+                <h2 class="section-title">B.4: RANSAC for Robust Homography</h2>
+                <div class="description">
+                    By checking geometric transformation plausibility, we are able to match the corresponding points better than if we used similarities in appearance. First we choose 4 features (hence why it is called 4-point RANSAC), and use the compute_H function from part A to find the projective transformation matrix. 4 points equals 8 independent parameters of homography. After getting the H matrices, we need to classify the inliers now, which will tell us which points are supposed to be in the data set. We first check the errors between the source data point and the destination data point, then set an error threshold (e.g. 3). Using the homography with the most amount of inliers, aka most amount of accurate points to reconstruct, we are able to combine it with the mosaic function from part A as well and get the accurate panoramas. When compared to the manual selected mosiacing, it is definitely cleaner because it does not rely on a human choosing correct points and is not subject to human errors. For the cafe photo, I had to choose points again since there was some ghosting going on when I didn't choose the points as precisely. However, this RANSAC method is subjected to the quality of the detected features and descriptor matches.
+                </div>
+
+                <div class="image-group">
+                    <h3 class="group-title">Comparison between manual and automatic mosaicing</h3>
+                    
+                    <!-- Row 1: 3 images -->
+                    <div class="image-grid" style="margin-bottom: 16px;">
+                        <figure><img src="media/building_left.png" alt=""><figcaption>building_left.png</figcaption></figure>
+                        <figure><img src="media/building_center.png" alt=""><figcaption>building_center.png</figcaption></figure>
+                        <figure><img src="media/building_right.png" alt=""><figcaption>building_right.png</figcaption></figure>
+                    </div>
+
+                    <!-- Row 2: 2 images -->
+                    <div class="image-grid-2" style="margin-bottom: 16px;">
+                        <figure><img src="media/m2.png" alt=""><figcaption>Manual Building Mosaic</figcaption></figure>
+                        <figure><img src="media/building_full.png" alt=""><figcaption>Automatic Building Mosaic</figcaption></figure>
+                    </div>
+
+                    <!-- Row 3: 3 images -->
+                    <div class="image-grid" style="margin-bottom: 16px;">
+                        <figure><img src="media/cafe_left.png" alt=""><figcaption>Detail View 1</figcaption></figure>
+                        <figure><img src="media/cafe_center.png" alt=""><figcaption>Detail View 2</figcaption></figure>
+                        <figure><img src="media/cafe_right.png" alt=""><figcaption>Detail View 3</figcaption></figure>
+                    </div>
+
+                    <!-- Row 4: 2 images -->
+                    <div class="image-grid-2" style="margin-bottom: 16px;">
+                        <figure><img src="media/m1.png" alt=""><figcaption>Comparison View A</figcaption></figure>
+                        <figure><img src="media/cafe.png" alt=""><figcaption>Comparison View B</figcaption></figure>
+                    </div>
+
+                    <!-- Row 5: 3 images -->
+                    <div class="image-grid" style="margin-bottom: 16px;">
+                        <figure><img src="media/room_left.png" alt=""><figcaption>Blend Stage 1</figcaption></figure>
+                        <figure><img src="media/room_center.png" alt=""><figcaption>Blend Stage 2</figcaption></figure>
+                        <figure><img src="media/room_right.png" alt=""><figcaption>Blend Stage 3</figcaption></figure>
+                    </div>
+
+                    <!-- Row 6: 2 images -->
+                    <div class="image-grid-2">
+                        <figure><img src="media/m4.png" alt=""><figcaption>Final Autostitched Panorama 1</figcaption></figure>
+                        <figure><img src="media/room.png" alt=""><figcaption>Final Autostitched Panorama 2</figcaption></figure>
+                    </div>
+                </div>
+
+                <!-- Intermediate Description Between the Two Photo Sections -->
+                <div class="description" style="margin-top: 35px; margin-bottom: 25px;">
+                   Another issue with the automatic mosaicing is that repeated patterns and curved features are hard to create descriptor matches for. To try to solve this, I added an if statement to reject collinear samples and degenerate 4-point samples. Even though it is a bit better, we can still see how these repeated curves make recreating the image hard.
+                </div>
+
+                <!-- New Photo Section: 2 rows of 3 images -->
+                <div class="image-group">
+                    <h3 class="group-title">Autostitching Results & Evaluations (Part 2)</h3>
+                    
+                    <!-- New Row 1: 3 images -->
+                    <div class="image-grid" style="margin-bottom: 16px;">
+                        <figure><img src="media/gateway_left.png" alt=""><figcaption>Extra View 1</figcaption></figure>
+                        <figure><img src="media/gateway_center.png" alt=""><figcaption>Extra View 2</figcaption></figure>
+                        <figure><img src="media/gateway_right.png" alt=""><figcaption>Extra View 3</figcaption></figure>
+                    </div>
+
+                    <!-- New Row 2: 3 images -->
+                    <div class="image-grid">
+                        <figure><img src="media/m3.png" alt=""><figcaption>Extra Blend 1</figcaption></figure>
+                        <figure><img src="media/gateway.png" alt=""><figcaption>Extra Blend 2</figcaption></figure>
+                        <figure><img src="media/gateway1.png" alt=""><figcaption>Extra Blend 3</figcaption></figure>
                     </div>
                 </div>
             </section>
